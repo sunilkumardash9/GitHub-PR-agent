@@ -24,8 +24,7 @@ tools = composio_toolset.get_actions(
     ]
 )
 
-llm = Groq(model="mixtral-8x7b-32768",
-           api_key=os.environ["GROQ_API_KEY"])
+llm = OpenAI("GPT-4o")
 
 # Define the system message for the agent
 prefix_messages = [
@@ -66,7 +65,7 @@ pr_agent_tools = composio_toolset.get_actions(
         Action.GITHUB_GET_CODE_CHANGES_IN_PR,
         Action.GITHUB_PULLS_CREATE_REVIEW_COMMENT,
         Action.GITHUB_ISSUES_CREATE,
-        # Action.SLACKBOT_CHAT_POST_MESSAGE,
+        Action.SLACKBOT_CHAT_POST_MESSAGE,
     ]
 )
 
