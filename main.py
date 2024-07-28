@@ -1,20 +1,15 @@
-# Import necessary libraries
 import os
 
 from composio.client.collections import TriggerEventData
 
-# Import modules from Composio and LlamaIndex
 from composio_llamaindex import Action, App, ComposioToolSet
 from llama_index.core.agent import FunctionCallingAgentWorker
 from llama_index.core.llms import ChatMessage
 from llama_index.llms.groq import Groq
 from llama_index.llms.openai import OpenAI
 
-# Initialize a ComposioToolSet with the API key from environment variables
 composio_toolset = ComposioToolSet()
 
-# Retrieve tools from Composio, specifically the EMBEDTOOL app
-# Define the tools
 tools = composio_toolset.get_actions(
     actions=[
         Action.GITHUB_GET_CODE_CHANGES_IN_PR,
@@ -26,7 +21,6 @@ tools = composio_toolset.get_actions(
 
 llm = OpenAI("GPT-4o")
 
-# Define the system message for the agent
 prefix_messages = [
     ChatMessage(
         role="system",
@@ -43,23 +37,19 @@ prefix_messages = [
                 Once you have decided on the changes, for any TODOs, create a Github issue.
                 Also add the comprehensive review to the PR as a comment.
             """
-
         ),
     )
 ]
 
-# Initialize a FunctionCallingAgentWorker with the tools, LLM, and system messages
 agent = FunctionCallingAgentWorker(
-    tools=tools,  # Tools available for the agent to use
-    llm=llm,  # Language model for processing requests
-    prefix_messages=prefix_messages,  # Initial system messages for context
-    max_function_calls=10,  # Maximum number of function calls allowed
-    allow_parallel_tool_calls=False,  # Disallow parallel tool calls
-    verbose=True,  # Enable verbose output
+    tools=tools,
+    llm=llm,
+    prefix_messages=prefix_messages,
+    max_function_calls=10,
+    allow_parallel_tool_calls=False,
+    verbose=True
 ).as_agent()
 
-
-# Define the tools
 pr_agent_tools = composio_toolset.get_actions(
     actions=[
         Action.GITHUB_GET_CODE_CHANGES_IN_PR,
@@ -69,11 +59,9 @@ pr_agent_tools = composio_toolset.get_actions(
     ]
 )
 
-# Create a trigger listener
 listener = composio_toolset.create_trigger_listener()
 @listener.callback(filters={"trigger_name": "github_pull_request_event"})
 def review_new_pr(event: TriggerEventData) -> None:
-    # Using the information from Trigger, execute the agent
     code_to_review = str(event.payload)
     response = agent.chat("Review the following pr:"+code_to_review)
     print(response)
